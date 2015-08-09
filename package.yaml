@@ -1,0 +1,48 @@
+name: travis-meta-yaml
+version: 0.0.1.0
+synopsis: .travis.yml preprocessor
+description: .travis.yml preprocessor
+author: Oleg Grenrus <oleg.grenrus@iki.fi>
+maintainer: Oleg Grenrus <oleg.grenrus@iki.fi>
+license: BSD3
+github: phadej/travis-meta-yaml
+category: Development
+extra-source-files:
+  - README.md
+  - fixtures/*.yml
+
+ghc-options: -Wall
+
+dependencies:
+  - base >=4.7 && <4.9
+  - aeson
+  - bytestring
+  - lens-aeson
+  - lens
+  - text
+  - regex-applicative
+  - yaml
+
+library:
+  source-dirs:
+    - src
+
+executables:
+  travis-meta-yaml:
+    main: Main.hs
+    source-dirs: cli
+    dependencies:
+      - travis-meta-yaml
+      - optparse-applicative
+
+tests:
+  tests:
+    main: Tests.hs
+    source-dirs:
+      - tests
+    dependencies:
+      - extra
+      - file-embed
+      - travis-meta-yaml
+      - tasty
+      - tasty-quickcheck

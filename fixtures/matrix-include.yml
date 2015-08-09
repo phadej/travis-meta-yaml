@@ -1,0 +1,4 @@
+matrix:
+  include:
+    - env: FOO=foo
+    - env: FOO=bar
