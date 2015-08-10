@@ -19,7 +19,13 @@ cabal-version:  >= 1.10
 extra-source-files:
     .travis.meta.yml
     .travis.yml
+    data/language-haskell-multi-ghc.yml
+    data/language-haskell-stack.yml
     fixtures/matrix-include.yml
+    fixtures/multi-ghc-processed.yml
+    fixtures/multi-ghc.yml
+    fixtures/multi-processed.yml
+    fixtures/multi.yml
     fixtures/without-matrix-processed.yml
     fixtures/without-matrix.yml
     README.md
@@ -36,12 +42,15 @@ library
       base >=4.7 && <4.9
     , aeson
     , bytestring
-    , lens-aeson
+    , file-embed
     , lens
-    , text
+    , lens-aeson
     , regex-applicative
+    , text
+    , unordered-containers
     , yaml
   exposed-modules:
+      Data.Aeson.Merge
       Travis.Meta
   default-language: Haskell2010
 
@@ -54,10 +63,12 @@ executable travis-meta-yaml
       base >=4.7 && <4.9
     , aeson
     , bytestring
-    , lens-aeson
+    , file-embed
     , lens
-    , text
+    , lens-aeson
     , regex-applicative
+    , text
+    , unordered-containers
     , yaml
     , travis-meta-yaml
     , optparse-applicative
@@ -73,13 +84,14 @@ test-suite tests
       base >=4.7 && <4.9
     , aeson
     , bytestring
-    , lens-aeson
+    , file-embed
     , lens
-    , text
+    , lens-aeson
     , regex-applicative
+    , text
+    , unordered-containers
     , yaml
     , extra
-    , file-embed
     , travis-meta-yaml
     , tasty
     , tasty-quickcheck

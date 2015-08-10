@@ -1,0 +1,49 @@
+script:
+- cabal configure --enable-tests
+- cabal test -j2
+matrix:
+  include:
+  - env: GHCVER=7.8.4 CABALVER=1.18
+    addons:
+      apt:
+        sources:
+        - hvr-ghc
+        packages:
+        - cabal-install-1.18
+        - ghc-7.8.4
+  - env: GHCVER=7.10.1 CABALVER=1.22
+    addons:
+      apt:
+        sources:
+        - hvr-ghc
+        packages:
+        - cabal-install-1.22
+        - ghc-7.10.1
+  - env: GHCVER=7.10.2 CABALVER=1.22
+    addons:
+      apt:
+        sources:
+        - hvr-ghc
+        packages:
+        - cabal-install-1.22
+        - ghc-7.10.2
+  - env: GHCVER=head CABALVER=1.23
+    addons:
+      apt:
+        sources:
+        - hvr-ghc
+        packages:
+        - cabal-install-1.23
+        - ghc-head
+install:
+- cabal update
+- cabal install -j2 --only-dependencies --enable-tests
+cache:
+  apt: true
+before_install:
+- export PATH=/opt/ghc/$GHCVER/bin:/opt/cabal/$CABALVER/bin:$PATH
+- echo "$(ghc --version) [$(ghc --print-project-git-commit-id 2> /dev/null || echo
+  '?')]"
+- cabal --version
+language: c
+sudo: false
