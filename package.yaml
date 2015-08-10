@@ -1,5 +1,5 @@
 name: travis-meta-yaml
-version: 0.0.1.1
+version: 0.1.0.0
 synopsis: .travis.yml preprocessor
 description: .travis.yml preprocessor
 author: Oleg Grenrus <oleg.grenrus@iki.fi>
