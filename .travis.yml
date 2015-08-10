@@ -32,6 +32,8 @@ matrix:
 install:
 - cabal update
 - cabal install -j2 --only-dependencies --enable-tests
+cache:
+  apt: true
 before_install:
 - export PATH=/opt/ghc/$GHCVER/bin:/opt/cabal/$CABALVER/bin:$PATH
 - echo "$(ghc --version) [$(ghc --print-project-git-commit-id 2> /dev/null || echo
