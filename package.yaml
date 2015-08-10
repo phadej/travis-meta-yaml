@@ -10,6 +10,7 @@ category: Development
 extra-source-files:
   - README.md
   - fixtures/*.yml
+  - data/*.yml
   - .travis.yml
   - .travis.meta.yml
 
@@ -19,10 +20,12 @@ dependencies:
   - base >=4.7 && <4.9
   - aeson
   - bytestring
-  - lens-aeson
+  - file-embed
   - lens
-  - text
+  - lens-aeson
   - regex-applicative
+  - text
+  - unordered-containers
   - yaml
 
 library:
@@ -44,7 +47,6 @@ tests:
       - tests
     dependencies:
       - extra
-      - file-embed
       - travis-meta-yaml
       - tasty
       - tasty-quickcheck

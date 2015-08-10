@@ -11,13 +11,17 @@ data Opts = Opts
 
 sample :: Parser Opts
 sample = Opts
-  <$> strArgument
-      ( metavar "SOURCE"
+  <$> strOption
+      ( short 'i'
+     <> long "input"
+     <> metavar "SOURCE"
      <> value ".travis.meta.yml"
      <> showDefault
      <> help "Source, travis meta file" )
-  <*> strArgument
-      ( metavar "TARGET"
+  <*> strOption
+      ( short 'o'
+     <> long "output"
+     <> metavar "TARGET"
      <> value ".travis.yml"
      <> showDefault
      <> help "Target, travis yaml" )

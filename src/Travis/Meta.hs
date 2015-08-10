@@ -1,5 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE TemplateHaskell #-}
+-- |
+-- Module      : Travis.Meta
+-- Description : Travis preprocessor
+-- Copyright   : (c) Oleg Grenrus, 2005
+-- License     : BSD3
+-- Maintainer  : Oleg Grenrus <oleg.grenrus@iki.fi>
 module Travis.Meta (
   -- * High level
     preprocessIO
@@ -13,10 +19,12 @@ module Travis.Meta (
 
 import Control.Lens
 import Control.Monad hiding (sequence)
-import Data.Aeson.Types
 import Data.Aeson.Lens
+import Data.Aeson.Merge
+import Data.Aeson.Types
 import Data.ByteString as BS
 import Data.Char
+import Data.FileEmbed
 import Data.Maybe
 import Data.Monoid
 import Data.Text as T
@@ -65,7 +73,10 @@ hoist Nothing = Left "error in interpolation"
 hoist (Just a) = Right a
 
 preprocessYaml :: Value -> Either String Value
-preprocessYaml v = do
+preprocessYaml = preprocessYaml' . processLanguage 
+
+preprocessYaml' :: Value -> Either String Value
+preprocessYaml' v = do
   assertNoMatrixInclude v
   matrixInclude <- buildMatrixInclude v
   let v' = v & _Object . at "env" .~ Nothing
@@ -73,6 +84,13 @@ preprocessYaml v = do
              & _Object . at "matrix" ?~ (fromMaybe (Object mempty) (v ^? key "matrix"))
              & key "matrix" . _Object . at "include" ?~ matrixInclude
   return v'
+
+processLanguage :: Value -> Value
+processLanguage v =
+  case v ^? key "language" . _String of
+    Just t | t == "haskell-stack"      -> merge (v & _Object . at "language" .~ Nothing) stackTemplate
+           | t == "haskell-multi-ghc"  -> merge (v & _Object . at "language" .~ Nothing) multiGhcTemplate
+    _                                  -> v
 
 buildMatrixInclude :: Value -> Either String Value
 buildMatrixInclude v = toJSON <$> mk `traverse` envs
@@ -103,3 +121,9 @@ preprocessIO source target = do
 
 -- Right v <- decodeEither <$> BS.readFile ".travis.meta.yml"  :: IO (Either String Value)
 -- BS.putStr $ encode $ preprocessYaml v
+
+stackTemplate :: Value
+stackTemplate = fromJust $ decode $(embedFile "data/language-haskell-stack.yml")
+
+multiGhcTemplate :: Value
+multiGhcTemplate = fromJust $ decode $(embedFile "data/language-haskell-multi-ghc.yml")
