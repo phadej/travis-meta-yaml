@@ -10,6 +10,8 @@ category: Development
 extra-source-files:
   - README.md
   - fixtures/*.yml
+  - .travis.yml
+  - .travis.meta.yml
 
 ghc-options: -Wall
 
