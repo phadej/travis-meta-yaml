@@ -2,6 +2,7 @@
 {-# LANGUAGE RankNTypes #-}
 module Main (main) where
 
+import Data.ByteString
 import Data.Either.Extra
 import Data.FileEmbed
 import Data.Yaml
@@ -16,19 +17,24 @@ main = Test.Tasty.defaultMain tests
 tests :: TestTree
 tests = testGroup "Tests"
   [ selfTest
+  , withMatrix
   , withoutMatrix
   , errorCases
   ]
 
 selfTest :: TestTree
-selfTest = testProperty "Self test" $ once $ actual === processed
-  where actual     = decodeEither $(embedFile ".travis.yml")
-        processed  = preprocessYaml =<< decodeEither $(embedFile ".travis.meta.yml")
+selfTest = fixture "Self test" $(embedFile ".travis.yml") $(embedFile ".travis.meta.yml")
+
+withMatrix :: TestTree
+withMatrix = fixture "without matrix" $(embedFile "fixtures/multi-processed.yml") $(embedFile "fixtures/multi.yml")
 
 withoutMatrix :: TestTree
-withoutMatrix = testProperty "Self test without matrix" $ once $ actual === processed
-  where actual     = decodeEither $(embedFile "fixtures/without-matrix-processed.yml")
-        processed  = preprocessYaml =<< decodeEither $(embedFile "fixtures/without-matrix.yml")
+withoutMatrix = fixture "without matrix" $(embedFile "fixtures/without-matrix-processed.yml") $(embedFile "fixtures/without-matrix.yml")
+
+fixture :: String -> ByteString -> ByteString -> TestTree
+fixture name metaBS processedBS = testProperty name $ once $ actual === processed
+  where actual     = decodeEither metaBS
+        processed  = preprocessYaml =<< decodeEither processedBS
 
 errorCases :: TestTree
 errorCases = testGroup "Error cases"
