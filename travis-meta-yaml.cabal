@@ -46,6 +46,7 @@ library
     , lens
     , lens-aeson
     , regex-applicative
+    , regex-applicative-text
     , text
     , unordered-containers
     , yaml
@@ -67,6 +68,7 @@ executable travis-meta-yaml
     , lens
     , lens-aeson
     , regex-applicative
+    , regex-applicative-text
     , text
     , unordered-containers
     , yaml
@@ -88,6 +90,7 @@ test-suite tests
     , lens
     , lens-aeson
     , regex-applicative
+    , regex-applicative-text
     , text
     , unordered-containers
     , yaml

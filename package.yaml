@@ -24,6 +24,7 @@ dependencies:
   - lens
   - lens-aeson
   - regex-applicative
+  - regex-applicative-text
   - text
   - unordered-containers
   - yaml

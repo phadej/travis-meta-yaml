@@ -31,7 +31,7 @@ import Data.Text as T
 import Data.Traversable
 import Data.Yaml
 import Prelude hiding (sequence)
-import Text.Regex.Applicative
+import Text.Regex.Applicative.Text
 
 type Env = [(Text, Text)]
 
@@ -46,15 +46,15 @@ parseEnv = traverse (f . T.splitOn "=") . T.words
 
 -- > match (interpolationRe $ flip lookup [("foo", "bar")]) "$foo"
 -- Just (Just "bar")
-interpolationRe :: (String -> Maybe String) -> RE Char (Maybe String)
+interpolationRe :: (Text -> Maybe Text) -> RE' (Maybe Text)
 interpolationRe l = comb <$> many (interpolationChar l)
-  where comb :: [Maybe [a]] -> Maybe [a]
-        comb = fmap Prelude.concat . sequence
+  where comb :: [Maybe Text] -> Maybe Text
+        comb = fmap T.concat . sequence
 
-interpolationChar :: (String -> Maybe String) -> RE Char (Maybe String)
+interpolationChar :: (Text -> Maybe Text) -> RE' (Maybe Text)
 interpolationChar l = var <|> other
-  where var = l <$ sym '$' <*> many (psym isAlpha)
-        other = (\x -> Just [x]) <$> anySym
+  where var = l . T.pack <$ sym '$' <*> many (psym isAlpha)
+        other = Just . T.singleton <$> anySym
 
 -- | Interpolate env. Substitute all @$VAR@ occurrences with values from 'Env'.
 -- If variable is not in the environment, return 'Nothing'.
@@ -65,8 +65,8 @@ interpolationChar l = var <|> other
 -- > >>> interpolateEnv [("FOO","foo")] "yes-$FOOBAR-$FOO"
 -- > Nothing
 interpolateEnv :: Env -> Text -> Either String Text
-interpolateEnv env = hoist . fmap T.pack . join . match (interpolationRe l) . T.unpack
-  where l = fmap T.unpack . flip lookup env . T.pack
+interpolateEnv env = hoist . join . match (interpolationRe l)
+  where l = flip lookup env
 
 hoist :: Maybe a -> Either String a
 hoist Nothing = Left "error in interpolation"

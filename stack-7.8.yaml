@@ -1,5 +1,6 @@
 flags: {}
 packages:
 - '.'
-extra-deps: []
+extra-deps:
+- regex-applicative-text-0.1.0.0
 resolver: lts-2.21
