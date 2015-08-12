@@ -26,6 +26,7 @@ fixtures = testGroup "Fixtures"
   , f "with matrix" $(embedFile "fixtures/multi-processed.yml") $(embedFile "fixtures/multi.yml")
   , f "without matrix" $(embedFile "fixtures/without-matrix-processed.yml") $(embedFile "fixtures/without-matrix.yml")
   , f "multi-ghc" $(embedFile "fixtures/multi-ghc-processed.yml") $(embedFile "fixtures/multi-ghc.yml")
+  , f "stack" $(embedFile "fixtures/stack-processed.yml") $(embedFile "fixtures/stack.yml")
   ]
   where f = fixture
 

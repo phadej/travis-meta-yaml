@@ -1,14 +1,14 @@
-language: haskell-stack
+language: haskell-multi-ghc
 
 env:
-  - GHCVER=7.8.4 STACKYAML=stack-7.8.yaml
-  - GHCVER=7.10.1 STACKYAML=stack-7.10.yaml
-  - GHCVER=head CABALVER=1.22 STACKYAML=solver
+  - GHCVER=7.8.4 CABALVER=1.18
+  - GHCVER=7.10.1 CABALVER=1.22
+  - GHCVER=head CABALVER=1.22
 
 matrix:
   fast_finish: true
   allow_failures:
-  - env: GHCVER=head CABALVER=1.22 STACKYAML=solver
+    - env: GHCVER=head CABALVER=1.22
 
 branches:
   only:
