@@ -29,6 +29,7 @@ import Data.Maybe
 import Data.Monoid
 import Data.Text as T
 import Data.Traversable
+import Data.Vector.Lens (vector)
 import Data.Yaml
 import Prelude hiding (sequence)
 import Text.Regex.Applicative.Text
@@ -64,16 +65,12 @@ interpolationChar l = var <|> other
 --
 -- > >>> interpolateEnv [("FOO","foo")] "yes-$FOOBAR-$FOO"
 -- > Nothing
-interpolateEnv :: Env -> Text -> Either String Text
-interpolateEnv env = hoist . join . match (interpolationRe l)
+interpolateEnv :: Env -> Text -> Maybe Text
+interpolateEnv env = join . match (interpolationRe l)
   where l = flip lookup env
 
-hoist :: Maybe a -> Either String a
-hoist Nothing = Left "error in interpolation"
-hoist (Just a) = Right a
-
 preprocessYaml :: Value -> Either String Value
-preprocessYaml = preprocessYaml' . processLanguage 
+preprocessYaml = preprocessYaml' . processLanguage
 
 preprocessYaml' :: Value -> Either String Value
 preprocessYaml' v = do
@@ -97,11 +94,11 @@ buildMatrixInclude v = toJSON <$> mk `traverse` envs
   where addons  = v ^? key "addons"
         envs    = v ^.. key "env" . values . _String
         mk env  = do env' <- parseEnv env
-                     addons' <- traverseOf (deep _String) (interpolateEnv env') `traverse` addons
+                     let interpolate = traverseOf _String (interpolateEnv env')
+                         addons' = addons & _Just . key "apt" . key "packages" . _Array . from vector %~ mapMaybe interpolate
                      case addons' of
                        Just addons'' -> return $ object [ "env" Data.Yaml..= env, "addons" Data.Yaml..= addons'' ]
                        Nothing       -> return $ object [ "env" Data.Yaml..= env ]
-                     
 
 assertNoMatrixInclude :: Value -> Either String ()
 assertNoMatrixInclude v =
@@ -119,11 +116,11 @@ preprocessIO source target = do
     Left err -> error err
     Right bs -> BS.writeFile target bs
 
--- Right v <- decodeEither <$> BS.readFile ".travis.meta.yml"  :: IO (Either String Value)
--- BS.putStr $ encode $ preprocessYaml v
-
 stackTemplate :: Value
 stackTemplate = fromJust $ decode $(embedFile "data/language-haskell-stack.yml")
 
 multiGhcTemplate :: Value
 multiGhcTemplate = fromJust $ decode $(embedFile "data/language-haskell-multi-ghc.yml")
+
+-- Right v <- decodeEither <$> BS.readFile ".travis.meta.yml"  :: IO (Either String Value)
+-- BS.putStr $ encode $ preprocessYaml v

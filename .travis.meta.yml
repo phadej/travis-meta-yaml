@@ -3,3 +3,13 @@ language: haskell-stack
 env:
   - GHCVER=7.8.4 STACKYAML=stack-7.8.yaml
   - GHCVER=7.10.1 STACKYAML=stack-7.10.yaml
+  - GHCVER=head CABALVER=1.22 STACKYAML=solver
+
+matrix:
+  fast_finish: true
+  allow_failures:
+  - env: GHCVER=head CABALVER=1.22 STACKYAML=solver
+
+branches:
+  only:
+    - master
