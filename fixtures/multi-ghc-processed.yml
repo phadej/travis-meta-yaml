@@ -1,6 +1,8 @@
 script:
-- cabal configure --enable-tests
-- cabal test -j2
+- cabal configure --package-db=clear --package-db=global --package-db=$HOME/package-dbs/$GHCVER.d
+  --enable-tests
+- cabal build
+- cabal test
 matrix:
   include:
   - env: GHCVER=7.8.4 CABALVER=1.18
@@ -11,6 +13,7 @@ matrix:
         packages:
         - cabal-install-1.18
         - ghc-7.8.4
+        - libgmp-dev
   - env: GHCVER=7.10.1 CABALVER=1.22
     addons:
       apt:
@@ -19,6 +22,7 @@ matrix:
         packages:
         - cabal-install-1.22
         - ghc-7.10.1
+        - libgmp-dev
   - env: GHCVER=7.10.2 CABALVER=1.22
     addons:
       apt:
@@ -27,6 +31,7 @@ matrix:
         packages:
         - cabal-install-1.22
         - ghc-7.10.2
+        - libgmp-dev
   - env: GHCVER=head CABALVER=1.23
     addons:
       apt:
@@ -35,10 +40,14 @@ matrix:
         packages:
         - cabal-install-1.23
         - ghc-head
+        - libgmp-dev
 install:
 - cabal update
-- cabal install -j2 --only-dependencies --enable-tests
+- sed -i 's/^jobs:/-- jobs:/' ${HOME}/.cabal/config
+- ./init-custom-pkg-db.sh $HOME/package-dbs/$GHCVER.d
 cache:
+  directories:
+  - ~/package-dbs
   apt: true
 before_install:
 - export PATH=/opt/ghc/$GHCVER/bin:/opt/cabal/$CABALVER/bin:$PATH

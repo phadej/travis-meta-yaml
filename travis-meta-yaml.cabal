@@ -26,6 +26,8 @@ extra-source-files:
     fixtures/multi-ghc.yml
     fixtures/multi-processed.yml
     fixtures/multi.yml
+    fixtures/stack-processed.yml
+    fixtures/stack.yml
     fixtures/without-matrix-processed.yml
     fixtures/without-matrix.yml
     README.md

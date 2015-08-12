@@ -3,6 +3,8 @@ sudo: false
 
 cache:
   apt: true
+  directories:
+    - ~/package-dbs
 
 addons:
   apt:
@@ -11,6 +13,7 @@ addons:
     packages:
       - cabal-install-$CABALVER
       - ghc-$GHCVER
+      - libgmp-dev
 
 before_install:
   # ghc
@@ -21,8 +24,10 @@ before_install:
 
 install:
   - cabal update
-  - cabal install -j2 --only-dependencies --enable-tests
+  - sed -i 's/^jobs:/-- jobs:/' ${HOME}/.cabal/config
+  - ./init-custom-pkg-db.sh $HOME/package-dbs/$GHCVER.d
 
 script:
-  - cabal configure --enable-tests
-  - cabal test -j2
+  - cabal configure --package-db=clear --package-db=global --package-db=$HOME/package-dbs/$GHCVER.d --enable-tests
+  - cabal build
+  - cabal test
