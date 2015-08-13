@@ -23,7 +23,7 @@ before_install:
   - if [ -n "$CABALVER" ]; then export PATH=/opt/cabal/$CABALVER/bin:$PATH; fi
   # stack
   - export PATH=~/.local/bin:$PATH
-  - if [ ! -e ~/.local/bin/stack ]; then mkdir -p ~/.local/bin; travis_retry curl -L https://github.com/commercialhaskell/stack/releases/download/v0.1.3.0/stack-0.1.3.0-x86_64-linux.gz | gunzip > ~/.local/bin/stack; chmod a+x ~/.local/bin/stack; fi
+  - if [ ! -e ~/.local/bin/stack ]; then mkdir -p ~/.local/bin; travis_retry curl -L https://github.com/commercialhaskell/stack/releases/download/v0.1.3.1/stack-0.1.3.1-x86_64-linux.gz | gunzip > ~/.local/bin/stack; chmod a+x ~/.local/bin/stack; fi
   # version
   - echo "$(ghc --version) [$(ghc --print-project-git-commit-id 2> /dev/null || echo '?')]"
   - stack +RTS -N2 -RTS --version
