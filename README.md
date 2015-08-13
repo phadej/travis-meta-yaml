@@ -6,53 +6,79 @@
 ## Motivation
 
 ```
-language: haskell-stack
+language: haskell-multi-ghc
 
 env:
-  - GHCVER=7.8.4 STACKYAML=stack-7.8.4.yaml
-  - GHCVER=7.10.1 STACKYAML=stack-7.10.yaml
+  - GHCVER=7.8.4 CABALVER=1.18
+  - GHCVER=7.10.1 CABALVER=1.22
+  - GHCVER=head CABALVER=1.22
+
+matrix:
+  fast_finish: true
+  allow_failures:
+    - env: GHCVER=head CABALVER=1.22
+
+branches:
+  only:
+    - master
 ```
 
 into
 
 ```
 script:
-- stack +RTS -N2 -RTS --no-terminal --skip-ghc-check --stack-yaml $STACKYAML test
+- cabal configure --package-db=clear --package-db=global --package-db=$HOME/package-dbs/$GHCVER.d
+  --enable-tests
+- cabal build
+- cabal test
+branches:
+  only:
+  - master
 matrix:
+  fast_finish: true
   include:
-  - env: GHCVER=7.8.4 STACKYAML=stack-7.8.4.yaml
+  - env: GHCVER=7.8.4 CABALVER=1.18
     addons:
       apt:
         sources:
         - hvr-ghc
         packages:
+        - cabal-install-1.18
         - ghc-7.8.4
         - libgmp-dev
-  - env: GHCVER=7.10.1 STACKYAML=stack-7.10.yaml
+  - env: GHCVER=7.10.1 CABALVER=1.22
     addons:
       apt:
         sources:
         - hvr-ghc
         packages:
+        - cabal-install-1.22
         - ghc-7.10.1
         - libgmp-dev
+  - env: GHCVER=head CABALVER=1.22
+    addons:
+      apt:
+        sources:
+        - hvr-ghc
+        packages:
+        - cabal-install-1.22
+        - ghc-head
+        - libgmp-dev
+  allow_failures:
+  - env: GHCVER=head CABALVER=1.22
 install:
-- stack +RTS -N2 -RTS --no-terminal --skip-ghc-check --stack-yaml $STACKYAML setup
-- stack +RTS -N2 -RTS --no-terminal --skip-ghc-check --stack-yaml $STACKYAML test
-  --only-snapshot
+- cabal update
+- sed -i 's/^jobs:/-- jobs:/' ${HOME}/.cabal/config
+- ./init-custom-pkg-db.sh $HOME/package-dbs/$GHCVER.d
 cache:
   directories:
-  - ~/.stack
+  - ~/package-dbs
   apt: true
 before_install:
-- export PATH=/opt/ghc/$GHCVER/bin:$PATH
-- export PATH=~/.local/bin:$PATH
-- if [ ! -e ~/.local/bin/stack ]; then mkdir -p ~/.local/bin; travis_retry curl -L
-  https://github.com/commercialhaskell/stack/releases/download/v0.1.2.0/stack-0.1.2.0-x86_64-linux.gz
-  | gunzip > ~/.local/bin/stack; chmod a+x ~/.local/bin/stack; fi
+- export PATH=/opt/ghc/$GHCVER/bin:/opt/cabal/$CABALVER/bin:$PATH
 - echo "$(ghc --version) [$(ghc --print-project-git-commit-id 2> /dev/null || echo
   '?')]"
-- stack +RTS -N2 -RTS --version
+- cabal --version
 language: c
 sudo: false
 ```
