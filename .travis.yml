@@ -1,11 +1,19 @@
+sudo: false
+language: c
+before_install:
+- export PATH=/opt/ghc/$GHCVER/bin:/opt/cabal/$CABALVER/bin:$PATH
+- echo "$(ghc --version) [$(ghc --print-project-git-commit-id 2> /dev/null || echo
+  '?')]"
+- cabal --version
+install:
+- cabal update
+- sed -i 's/^jobs:/-- jobs:/' ${HOME}/.cabal/config
+- ./init-custom-pkg-db.sh $HOME/package-dbs/$GHCVER.d
 script:
 - cabal configure --package-db=clear --package-db=global --package-db=$HOME/package-dbs/$GHCVER.d
   --enable-tests
 - cabal build
 - cabal test
-branches:
-  only:
-  - master
 matrix:
   fast_finish: true
   include:
@@ -38,18 +46,10 @@ matrix:
         - libgmp-dev
   allow_failures:
   - env: GHCVER=head CABALVER=1.22
-install:
-- cabal update
-- sed -i 's/^jobs:/-- jobs:/' ${HOME}/.cabal/config
-- ./init-custom-pkg-db.sh $HOME/package-dbs/$GHCVER.d
+branches:
+  only:
+  - master
 cache:
   directories:
   - ~/package-dbs
   apt: true
-before_install:
-- export PATH=/opt/ghc/$GHCVER/bin:/opt/cabal/$CABALVER/bin:$PATH
-- echo "$(ghc --version) [$(ghc --print-project-git-commit-id 2> /dev/null || echo
-  '?')]"
-- cabal --version
-language: c
-sudo: false

@@ -3,4 +3,5 @@ packages:
 - '.'
 extra-deps:
 - regex-applicative-text-0.1.0.0
+- yaml-0.8.13
 resolver: nightly-2015-08-10

@@ -3,4 +3,5 @@ packages:
 - '.'
 extra-deps:
 - regex-applicative-text-0.1.0.0
+- yaml-0.8.13
 resolver: lts-2.21
