@@ -28,6 +28,15 @@ install:
   - ./init-custom-pkg-db.sh $HOME/package-dbs/$GHCVER.d
 
 script:
-  - cabal configure --package-db=clear --package-db=global --package-db=$HOME/package-dbs/$GHCVER.d --enable-tests
+  - if [ -f configure.ac ]; then autoreconf -i; fi
+  # -v2 provides useful information for debugging
+  - cabal configure --package-db=clear --package-db=global --package-db=$HOME/package-dbs/$GHCVER.d --enable-tests --enable-benchmarks -v2
   - cabal build
   - cabal test
+  - if [ "$CABALVER" = "1.22" ]; then cabal check; fi
+  # tests that a source-distribution can be generated
+  - cabal sdist
+
+  # check that the generated source-distribution can be built & installed
+  - SRC_TGZ=$(cabal info . | awk '{print $2;exit}').tar.gz &&
+    (cd dist && cabal install --package-db=clear --package-db=global --package-db=$HOME/package-dbs/$GHCVER.d --force-reinstalls "$SRC_TGZ")

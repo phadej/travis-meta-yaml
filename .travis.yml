@@ -10,10 +10,16 @@ install:
 - sed -i 's/^jobs:/-- jobs:/' ${HOME}/.cabal/config
 - ./init-custom-pkg-db.sh $HOME/package-dbs/$GHCVER.d
 script:
+- if [ -f configure.ac ]; then autoreconf -i; fi
 - cabal configure --package-db=clear --package-db=global --package-db=$HOME/package-dbs/$GHCVER.d
-  --enable-tests
+  --enable-tests --enable-benchmarks -v2
 - cabal build
 - cabal test
+- if [ "$CABALVER" = "1.22" ]; then cabal check; fi
+- cabal sdist
+- SRC_TGZ=$(cabal info . | awk '{print $2;exit}').tar.gz && (cd dist && cabal install
+  --package-db=clear --package-db=global --package-db=$HOME/package-dbs/$GHCVER.d
+  --force-reinstalls "$SRC_TGZ")
 matrix:
   fast_finish: true
   include:

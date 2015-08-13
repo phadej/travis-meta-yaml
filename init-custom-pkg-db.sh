@@ -24,7 +24,7 @@ else
 
 	# Install dependencies there
     cabal install \
-        --enable-tests --only-dependencies \
+        --enable-tests --enable-benchmarks --only-dependencies \
         --package-db=clear --package-db=global --package-db=$PKGDB \
         --libdir=$PKGDB/lib --haddockdir=$PKGDB/doc \
         --disable-documentation --disable-library-profiling

@@ -1,10 +1,16 @@
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE OverloadedStrings #-}
 module Main (main) where
 
-import Data.Monoid
-import Options.Applicative
-import Travis.Meta
+import qualified Data.ByteString as BS
+import           Data.FileEmbed (embedFile)
+import           Data.Monoid
+import           Options.Applicative
+import           Travis.Meta
+import           Turtle.Prelude (chmod, executable)
 
 data Command = GenerateCmd GenerateOpts
+             | InitCmd
   deriving (Eq, Show)
 
 data GenerateOpts = GenerateOpts
@@ -33,10 +39,16 @@ generateParser = GenerateOpts
 commandParser :: Parser Command
 commandParser = subparser $ mconcat
   [ command "generate" (info (helper <*> (GenerateCmd <$> generateParser)) (progDesc "Generate .travis.yml file"))
+  , command "init" (info (helper <*> pure InitCmd) (progDesc "Initalise .travis.meta.yml and depdendencies"))
   ]
 
 execCommand :: Command -> IO ()
 execCommand (GenerateCmd (GenerateOpts source target)) = preprocessIO source target
+execCommand InitCmd = do
+  BS.writeFile ".travis.meta.yml" $(embedFile "data/travis.meta.yml")
+  BS.writeFile "init-custom-pkg-db.sh" $(embedFile "init-custom-pkg-db.sh")
+  _ <- chmod executable "init-custom-pkg-db.sh"
+  return ()
 
 main :: IO ()
 main = execParser opts >>= execCommand

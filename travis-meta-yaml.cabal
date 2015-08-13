@@ -21,6 +21,7 @@ extra-source-files:
     .travis.yml
     data/language-haskell-multi-ghc.yml
     data/language-haskell-stack.yml
+    data/travis.meta.yml
     fixtures/matrix-include.yml
     fixtures/multi-ghc-processed.yml
     fixtures/multi-ghc.yml
@@ -30,6 +31,7 @@ extra-source-files:
     fixtures/stack.yml
     fixtures/without-matrix-processed.yml
     fixtures/without-matrix.yml
+    init-custom-pkg-db.sh
     README.md
 
 source-repository head
@@ -51,7 +53,8 @@ library
     , regex-applicative-text
     , text
     , unordered-containers
-    , yaml
+    , yaml >= 0.8.13
+    , turtle >= 1.2
   exposed-modules:
       Data.Aeson.Merge
       Travis.Meta
@@ -73,7 +76,8 @@ executable travis-meta-yaml
     , regex-applicative-text
     , text
     , unordered-containers
-    , yaml
+    , yaml >= 0.8.13
+    , turtle >= 1.2
     , travis-meta-yaml
     , optparse-applicative
   default-language: Haskell2010
@@ -95,7 +99,8 @@ test-suite tests
     , regex-applicative-text
     , text
     , unordered-containers
-    , yaml
+    , yaml >= 0.8.13
+    , turtle >= 1.2
     , extra
     , travis-meta-yaml
     , tasty

@@ -4,4 +4,8 @@ packages:
 extra-deps:
 - regex-applicative-text-0.1.0.0
 - yaml-0.8.13
+- turtle-1.2.1
+# turtle dependencies:
+- foldl-1.1.1
+- optional-args-1.0.0
 resolver: lts-2.21
