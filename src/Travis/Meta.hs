@@ -15,9 +15,11 @@ module Travis.Meta (
   , Env
   , parseEnv
   , interpolateEnv
+  , unlinesShell
   ) where
 
-import Control.Lens
+import Control.Category hiding ((.))
+import Control.Lens hiding ((.=))
 import Control.Monad hiding (sequence)
 import Data.Aeson.Lens
 import Data.Aeson.Merge
@@ -25,17 +27,19 @@ import Data.Aeson.Types
 import Data.ByteString as BS
 import Data.Char
 import Data.FileEmbed
+import Data.Function (on)
+import Data.List as L (map, elemIndex, filter)
 import Data.Maybe
 import Data.Monoid
-import Data.List as L (elemIndex)
-import Data.Function (on)
 import Data.Text as T
 import Data.Traversable
 import Data.Vector.Lens (vector)
 import Data.Yaml
 import Data.Yaml.Pretty
 import Prelude hiding (sequence)
-import Text.Regex.Applicative.Text
+import Text.Regex.Applicative.Text as RE
+
+import Debug.Trace
 
 type Env = [(Text, Text)]
 
@@ -79,8 +83,10 @@ preprocessYaml' :: Value -> Either String Value
 preprocessYaml' v = do
   assertNoMatrixInclude v
   matrixInclude <- buildMatrixInclude v
-  let v' = v & _Object . at "env" .~ Nothing
+  let v' = v & deep _String %~ embedTravisInstallSh
+             & _Object . at "env" .~ Nothing
              & _Object . at "addons" .~ Nothing
+             & _Object . at "compiler" .~ Nothing
              & _Object . at "matrix" ?~ (fromMaybe (Object mempty) (v ^? key "matrix"))
              & key "matrix" . _Object . at "include" ?~ matrixInclude
   return v'
@@ -94,14 +100,18 @@ processLanguage v =
 
 buildMatrixInclude :: Value -> Either String Value
 buildMatrixInclude v = toJSON <$> mk `traverse` envs
-  where addons  = v ^? key "addons"
-        envs    = v ^.. key "env" . values . _String
-        mk env  = do env' <- parseEnv env
-                     let interpolate = traverseOf _String (interpolateEnv env')
-                         addons' = addons & _Just . key "apt" . key "packages" . _Array . from vector %~ mapMaybe interpolate
-                     case addons' of
-                       Just addons'' -> return $ object [ "env" Data.Yaml..= env, "addons" Data.Yaml..= addons'' ]
-                       Nothing       -> return $ object [ "env" Data.Yaml..= env ]
+  where addons   = v ^? key "addons"
+        compiler = v ^? key "compiler" . _String
+        envs     = v ^.. key "env" . values . _String
+        mk env   = do env' <- parseEnv env
+                      let interpolate = traverseOf _String (interpolateEnv env')
+                          addons'     = addons & _Just . key "apt" . key "packages" . _Array . from vector %~ mapMaybe interpolate
+                          compiler'   = compiler & _Just %~ (fromMaybe mempty . interpolateEnv env')
+                      return $ object $ catMaybes
+                        [ Just $ "env" .= env
+                        , ("addons" .=) <$> addons'
+                        , ("compiler" .=) <$> compiler'
+                        ]
 
 assertNoMatrixInclude :: Value -> Either String ()
 assertNoMatrixInclude v =
@@ -124,6 +134,21 @@ stackTemplate = fromJust $ decode $(embedFile "data/language-haskell-stack.yml")
 
 multiGhcTemplate :: Value
 multiGhcTemplate = fromJust $ decode $(embedFile "data/language-haskell-multi-ghc.yml")
+
+travisInstallSh :: Text
+travisInstallSh = unlinesShell $(embedStringFile "data/travis-install.sh")
+
+embedTravisInstallSh :: Text -> Text
+embedTravisInstallSh = RE.replace (travisInstallSh <$ string "sh" <* some (sym ' ') <* string "travis-install.sh")
+
+unlinesShell :: Text -> Text
+unlinesShell = T.lines >>>
+               L.map (strip . stripComments) >>>
+               L.filter (not . T.null) >>>
+               L.map (fixSemiColonThenElse . (<> ";")) >>>
+               T.intercalate " "
+  where stripComments = RE.replace ("" <$ sym '#' <* many anySym)
+        fixSemiColonThenElse = RE.replace ((string "then" <|> string "else") <* sym ';')
 
 -- Right v <- decodeEither <$> BS.readFile ".travis.meta.yml"  :: IO (Either String Value)
 -- BS.putStr $ encode $ preprocessYaml v
