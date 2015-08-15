@@ -39,8 +39,6 @@ import Data.Yaml.Pretty
 import Prelude hiding (sequence)
 import Text.Regex.Applicative.Text as RE
 
-import Debug.Trace
-
 type Env = [(Text, Text)]
 
 -- | Parse environment string.
