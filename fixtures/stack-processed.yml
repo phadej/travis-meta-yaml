@@ -1,3 +1,4 @@
+# This file has been generated -- see https://github.com/phadej/travis-meta-yaml
 sudo: false
 language: c
 before_install:

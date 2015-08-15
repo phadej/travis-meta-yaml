@@ -119,8 +119,11 @@ assertNoMatrixInclude v =
     Nothing -> Right ()
     Just v' -> Left $ "matrix.include specified: " ++ show v'
 
+header :: ByteString
+header = "# This file has been generated -- see https://github.com/phadej/travis-meta-yaml\n"
+
 preprocess :: ByteString -> Either String ByteString
-preprocess = fmap encode' . preprocessYaml <=< decodeEither
+preprocess = fmap ((header <>) . encode') . preprocessYaml <=< decodeEither
 
 preprocessIO :: FilePath -> FilePath -> IO ()
 preprocessIO source target = do
