@@ -1,3 +1,5 @@
+# Based on https://github.com/hvr/multi-ghc-travis
+
 # Package database
 if [ -f $HOME/.cabal/packages/hackage.haskell.org/00-index.tar.gz ]; then
    zcat $HOME/.cabal/packages/hackage.haskell.org/00-index.tar.gz > $HOME/.cabal/packages/hackage.haskell.org/00-index.tar
