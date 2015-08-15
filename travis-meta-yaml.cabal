@@ -21,6 +21,7 @@ extra-source-files:
     .travis.yml
     data/language-haskell-multi-ghc.yml
     data/language-haskell-stack.yml
+    data/travis-install.sh
     data/travis.meta.yml
     fixtures/matrix-include.yml
     fixtures/multi-ghc-processed.yml
@@ -31,7 +32,6 @@ extra-source-files:
     fixtures/stack.yml
     fixtures/without-matrix-processed.yml
     fixtures/without-matrix.yml
-    init-custom-pkg-db.sh
     README.md
 
 source-repository head
@@ -46,7 +46,7 @@ library
       base >=4.7 && <4.9
     , aeson
     , bytestring
-    , file-embed
+    , file-embed >= 0.0.9
     , lens
     , lens-aeson
     , regex-applicative
@@ -54,7 +54,6 @@ library
     , text
     , unordered-containers
     , yaml >= 0.8.13
-    , turtle >= 1.2
   exposed-modules:
       Data.Aeson.Merge
       Travis.Meta
@@ -69,7 +68,7 @@ executable travis-meta-yaml
       base >=4.7 && <4.9
     , aeson
     , bytestring
-    , file-embed
+    , file-embed >= 0.0.9
     , lens
     , lens-aeson
     , regex-applicative
@@ -77,7 +76,6 @@ executable travis-meta-yaml
     , text
     , unordered-containers
     , yaml >= 0.8.13
-    , turtle >= 1.2
     , travis-meta-yaml
     , optparse-applicative
   default-language: Haskell2010
@@ -92,7 +90,7 @@ test-suite tests
       base >=4.7 && <4.9
     , aeson
     , bytestring
-    , file-embed
+    , file-embed >= 0.0.9
     , lens
     , lens-aeson
     , regex-applicative
@@ -100,7 +98,6 @@ test-suite tests
     , text
     , unordered-containers
     , yaml >= 0.8.13
-    , turtle >= 1.2
     , extra
     , travis-meta-yaml
     , tasty

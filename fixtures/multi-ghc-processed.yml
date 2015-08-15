@@ -1,24 +1,34 @@
+# This file has been generated -- see https://github.com/phadej/travis-meta-yaml
 sudo: false
 language: c
 before_install:
+- unset CC
 - export PATH=/opt/ghc/$GHCVER/bin:/opt/cabal/$CABALVER/bin:$PATH
 - echo "$(ghc --version) [$(ghc --print-project-git-commit-id 2> /dev/null || echo
   '?')]"
 - cabal --version
 install:
-- cabal update
-- sed -i 's/^jobs:/-- jobs:/' ${HOME}/.cabal/config
-- ./init-custom-pkg-db.sh $HOME/package-dbs/$GHCVER.d
+- if [ -f $HOME/.cabal/packages/hackage.haskell.org/00-index.tar.gz ]; then zcat $HOME/.cabal/packages/hackage.haskell.org/00-index.tar.gz
+  > $HOME/.cabal/packages/hackage.haskell.org/00-index.tar; ls -l $HOME/.cabal/packages/hackage.haskell.org/;
+  fi; cabal update; sed -i 's/^jobs:/-- jobs:/' ${HOME}/.cabal/config; cabal install
+  --only-dependencies --enable-tests --enable-benchmarks --dry -v > installplan.txt;
+  sed -i -e '1,/^Resolving /d' installplan.txt; cat installplan.txt; if diff -u installplan.txt
+  $HOME/.cabsnap/installplan.txt; then echo "cabal build-cache HIT"; rm -rfv .ghc;
+  cp -av $HOME/.cabsnap/ghc $HOME/.ghc; cp -av $HOME/.cabsnap/lib $HOME/.cabsnap/share
+  $HOME/.cabsnap/bin $HOME/.cabal/; else echo "cabal build-cache MISS"; rm -rf $HOME/.cabsnap;
+  mkdir -p $HOME/.ghc $HOME/.cabal/lib $HOME/.cabal/share $HOME/.cabal/bin; cabal
+  install --only-dependencies --enable-tests --enable-benchmarks; fi; if [ ! -d $HOME/.cabsnap
+  ]; then echo "snapshotting package-db to build-cache"; mkdir $HOME/.cabsnap; cp
+  -av $HOME/.ghc $HOME/.cabsnap/ghc; cp -av $HOME/.cabal/lib $HOME/.cabal/share $HOME/.cabal/bin
+  installplan.txt $HOME/.cabsnap/; fi;
 script:
 - if [ -f configure.ac ]; then autoreconf -i; fi
-- cabal configure --package-db=clear --package-db=global --package-db=$HOME/package-dbs/$GHCVER.d
-  --enable-tests --enable-benchmarks -v2
+- cabal configure --enable-tests --enable-benchmarks -v2
 - cabal build
 - cabal test
 - if [ "$CABALVER" = "1.22" ]; then cabal check; fi
 - cabal sdist
 - SRC_TGZ=$(cabal info . | awk '{print $2;exit}').tar.gz && (cd dist && cabal install
-  --package-db=clear --package-db=global --package-db=$HOME/package-dbs/$GHCVER.d
   --force-reinstalls "$SRC_TGZ")
 matrix:
   include:
@@ -31,6 +41,7 @@ matrix:
         - cabal-install-1.18
         - ghc-7.8.4
         - libgmp-dev
+    compiler: ! ': # ghc-7.8.4 cabal-1.18'
   - env: GHCVER=7.10.1 CABALVER=1.22
     addons:
       apt:
@@ -40,6 +51,7 @@ matrix:
         - cabal-install-1.22
         - ghc-7.10.1
         - libgmp-dev
+    compiler: ! ': # ghc-7.10.1 cabal-1.22'
   - env: GHCVER=7.10.2 CABALVER=1.22
     addons:
       apt:
@@ -49,6 +61,7 @@ matrix:
         - cabal-install-1.22
         - ghc-7.10.2
         - libgmp-dev
+    compiler: ! ': # ghc-7.10.2 cabal-1.22'
   - env: GHCVER=head CABALVER=1.23
     addons:
       apt:
@@ -58,7 +71,11 @@ matrix:
         - cabal-install-1.23
         - ghc-head
         - libgmp-dev
+    compiler: ! ': # ghc-head cabal-1.23'
+before_cache:
+- rm -fv $HOME/.cabal/packages/hackage.haskell.org/build-reports.log
+- rm -fv $HOME/.cabal/packages/hackage.haskell.org/00-index.tar
 cache:
   directories:
-  - ~/package-dbs
-  apt: true
+  - $HOME/.cabsnap
+  - $HOME/.cabal/packages

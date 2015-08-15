@@ -7,7 +7,6 @@ import           Data.FileEmbed (embedFile)
 import           Data.Monoid
 import           Options.Applicative
 import           Travis.Meta
-import           Turtle.Prelude (chmod, executable)
 
 data Command = GenerateCmd GenerateOpts
              | InitCmd
@@ -44,11 +43,8 @@ commandParser = subparser $ mconcat
 
 execCommand :: Command -> IO ()
 execCommand (GenerateCmd (GenerateOpts source target)) = preprocessIO source target
-execCommand InitCmd = do
+execCommand InitCmd =
   BS.writeFile ".travis.meta.yml" $(embedFile "data/travis.meta.yml")
-  BS.writeFile "init-custom-pkg-db.sh" $(embedFile "init-custom-pkg-db.sh")
-  _ <- chmod executable "init-custom-pkg-db.sh"
-  return ()
 
 main :: IO ()
 main = execParser opts >>= execCommand

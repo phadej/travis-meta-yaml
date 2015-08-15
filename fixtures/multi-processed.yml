@@ -1,3 +1,13 @@
+# This file has been generated -- see https://github.com/phadej/travis-meta-yaml
+sudo: false
+before_install:
+- export PATH=/opt/ghc/$GHCVER/bin:/opt/cabal/$CABALVER/bin:$PATH
+- echo "$(ghc --version) [$(ghc --print-project-git-commit-id 2> /dev/null || echo
+  '?')]"
+- cabal --version
+install:
+- cabal update
+- cabal install -j2 --only-dependencies --enable-tests
 script:
 - cabal configure --enable-tests
 - cabal test -j2
@@ -29,14 +39,5 @@ matrix:
         - ghc-head
   allow_failures:
   - env: CABALVER=1.22 GHCVER=head
-install:
-- cabal update
-- cabal install -j2 --only-dependencies --enable-tests
 cache:
   apt: true
-before_install:
-- export PATH=/opt/ghc/$GHCVER/bin:/opt/cabal/$CABALVER/bin:$PATH
-- echo "$(ghc --version) [$(ghc --print-project-git-commit-id 2> /dev/null || echo
-  '?')]"
-- cabal --version
-sudo: false

@@ -2,9 +2,11 @@ language: c
 sudo: false
 
 cache:
-  apt: true
   directories:
-    - ~/package-dbs
+    - $HOME/.cabsnap
+    - $HOME/.cabal/packages
+
+compiler: ": # ghc-$GHCVER cabal-$CABALVER"
 
 addons:
   apt:
@@ -16,6 +18,8 @@ addons:
       - libgmp-dev
 
 before_install:
+  # cleanup compiler hack
+  - unset CC
   # ghc
   - export PATH=/opt/ghc/$GHCVER/bin:/opt/cabal/$CABALVER/bin:$PATH
   # versions
@@ -23,14 +27,12 @@ before_install:
   - cabal --version
 
 install:
-  - cabal update
-  - sed -i 's/^jobs:/-- jobs:/' ${HOME}/.cabal/config
-  - ./init-custom-pkg-db.sh $HOME/package-dbs/$GHCVER.d
+  - sh travis-install.sh
 
 script:
   - if [ -f configure.ac ]; then autoreconf -i; fi
   # -v2 provides useful information for debugging
-  - cabal configure --package-db=clear --package-db=global --package-db=$HOME/package-dbs/$GHCVER.d --enable-tests --enable-benchmarks -v2
+  - cabal configure --enable-tests --enable-benchmarks -v2
   - cabal build
   - cabal test
   - if [ "$CABALVER" = "1.22" ]; then cabal check; fi
@@ -39,4 +41,8 @@ script:
 
   # check that the generated source-distribution can be built & installed
   - SRC_TGZ=$(cabal info . | awk '{print $2;exit}').tar.gz &&
-    (cd dist && cabal install --package-db=clear --package-db=global --package-db=$HOME/package-dbs/$GHCVER.d --force-reinstalls "$SRC_TGZ")
+    (cd dist && cabal install --force-reinstalls "$SRC_TGZ")
+
+before_cache:
+  - rm -fv $HOME/.cabal/packages/hackage.haskell.org/build-reports.log
+  - rm -fv $HOME/.cabal/packages/hackage.haskell.org/00-index.tar
