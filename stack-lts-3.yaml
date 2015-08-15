@@ -1,0 +1,8 @@
+flags: {}
+packages:
+- '.'
+extra-deps:
+- regex-applicative-text-0.1.0.0
+- yaml-0.8.13
+- file-embed-0.0.9
+resolver: lts-3.0
