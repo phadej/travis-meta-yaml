@@ -7,7 +7,7 @@ maintainer: Oleg Grenrus <oleg.grenrus@iki.fi>
 license: BSD3
 github: phadej/travis-meta-yaml
 category: Development
-tested-with: GHC-7.8.4, GHC-7.10.1
+tested-with: GHC==7.8.4, GHC==7.10.2
 extra-source-files:
   - README.md
   - fixtures/*.yml
