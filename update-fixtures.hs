@@ -3,7 +3,7 @@
 set -e
 set -x
 
-TML=.stack-work/install/x86_64-osx/lts-2.21/7.8.4/bin/travis-meta-yaml
+TML=.stack-work/install/x86_64-osx/lts-2.22/7.8.4/bin/travis-meta-yaml
 
 $TML generate -i .travis.meta.yml -o .travis.yml
 

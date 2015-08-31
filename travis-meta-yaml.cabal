@@ -19,6 +19,7 @@ cabal-version:  >= 1.10
 extra-source-files:
     .travis.meta.yml
     .travis.yml
+    data/haskell-stack-install.sh
     data/language-haskell-multi-ghc.yml
     data/language-haskell-stack.yml
     data/travis-install.sh

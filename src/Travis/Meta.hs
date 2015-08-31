@@ -57,9 +57,12 @@ interpolationRe l = comb <$> many (interpolationChar l)
   where comb :: [Maybe Text] -> Maybe Text
         comb = fmap T.concat . sequence
 
+isVarChar :: Char -> Bool
+isVarChar = (||) <$> isAlpha <*> (=='_')
+
 interpolationChar :: (Text -> Maybe Text) -> RE' (Maybe Text)
 interpolationChar l = var <|> other
-  where var = l . T.pack <$ sym '$' <*> many (psym isAlpha)
+  where var = l . T.pack <$ sym '$' <*> many (psym isVarChar)
         other = Just . T.singleton <$> anySym
 
 -- | Interpolate env. Substitute all @$VAR@ occurrences with values from 'Env'.
@@ -74,6 +77,15 @@ interpolateEnv :: Env -> Text -> Maybe Text
 interpolateEnv env = join . match (interpolationRe l)
   where l = flip lookup env
 
+-- | Like 'interpolateEnv' but substitue non-existing variables with empty string.
+--
+-- > >>> interpolateEnv [("FOO","foo")] "yes-$FOOBAR-$FOO"
+-- > "yes--foo"
+interpolateEnv' :: Env -> Text -> Text
+interpolateEnv' env = RE.replace (f <$ sym '$' <*> many (psym isVarChar))
+  where f :: String -> Text
+        f = fromMaybe "" . flip lookup env . T.pack
+
 preprocessYaml :: Value -> Either String Value
 preprocessYaml = preprocessYaml' . processLanguage
 
@@ -81,7 +93,7 @@ preprocessYaml' :: Value -> Either String Value
 preprocessYaml' v = do
   assertNoMatrixInclude v
   matrixInclude <- buildMatrixInclude v
-  let v' = v & deep _String %~ embedTravisInstallSh
+  let v' = v & deep _String %~ (embedTravisInstallSh . embedStackInstall)
              & _Object . at "env" .~ Nothing
              & _Object . at "addons" .~ Nothing
              & _Object . at "compiler" .~ Nothing
@@ -104,7 +116,7 @@ buildMatrixInclude v = toJSON <$> mk `traverse` envs
         mk env   = do env' <- parseEnv env
                       let interpolate = traverseOf _String (interpolateEnv env')
                           addons'     = addons & _Just . key "apt" . key "packages" . _Array . from vector %~ mapMaybe interpolate
-                          compiler'   = compiler & _Just %~ (fromMaybe mempty . interpolateEnv env')
+                          compiler'   = compiler & _Just %~ T.strip . interpolateEnv' env'
                       return $ object $ catMaybes
                         [ Just $ "env" .= env
                         , ("addons" .=) <$> addons'
@@ -130,8 +142,19 @@ preprocessIO source target = do
     Left err -> error err
     Right bs -> BS.writeFile target bs
 
+-- | name and contents pairs
+shellScripts :: [(Text, Text)]
+shellScripts =
+  [ ("travis-install.sh", unlinesShell $(embedStringFile "data/travis-install.sh"))
+  , ("haskell-stack-install.sh", unlinesShell $(embedStringFile "data/haskell-stack-install.sh"))
+  ]
+
+fromJust' :: String -> Maybe a -> a
+fromJust' _ (Just x) = x
+fromJust' e Nothing  = error $ "fromJust: Nothing -- " <> e
+
 stackTemplate :: Value
-stackTemplate = fromJust $ decode $(embedFile "data/language-haskell-stack.yml")
+stackTemplate = fromJust' "stack-template" $ decode $(embedFile "data/language-haskell-stack.yml")
 
 multiGhcTemplate :: Value
 multiGhcTemplate = fromJust $ decode $(embedFile "data/language-haskell-multi-ghc.yml")
@@ -139,8 +162,18 @@ multiGhcTemplate = fromJust $ decode $(embedFile "data/language-haskell-multi-gh
 travisInstallSh :: Text
 travisInstallSh = unlinesShell $(embedStringFile "data/travis-install.sh")
 
+embedShellFile :: Text -> Text -> Text -> Text
+embedShellFile filename contents =
+    RE.replace (contents <$ string "sh" <* some (sym ' ') <* string filename)
+
 embedTravisInstallSh :: Text -> Text
-embedTravisInstallSh = RE.replace (travisInstallSh <$ string "sh" <* some (sym ' ') <* string "travis-install.sh")
+embedTravisInstallSh = embedShellFile "travis-install.sh" travisInstallSh
+
+stackInstallSh :: Text
+stackInstallSh = unlinesShell $(embedStringFile "data/haskell-stack-install.sh")
+
+embedStackInstall :: Text -> Text
+embedStackInstall = embedShellFile "haskell-stack-install.sh" stackInstallSh
 
 unlinesShell :: Text -> Text
 unlinesShell = T.lines >>>
