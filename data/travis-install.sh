@@ -17,7 +17,7 @@ cabal install --only-dependencies --enable-tests --enable-benchmarks --dry -v > 
 sed -i -e '1,/^Resolving /d' installplan.txt; cat installplan.txt
 
 # check whether current requested install-plan matches cached package-db snapshot
-if diff -u installplan.txt $HOME/.cabsnap/installplan.txt; then
+if diff -u $HOME/.cabsnap/installplan.txt installplan.txt; then
   echo "cabal build-cache HIT"
   rm -rfv .ghc
   cp -av $HOME/.cabsnap/ghc $HOME/.ghc

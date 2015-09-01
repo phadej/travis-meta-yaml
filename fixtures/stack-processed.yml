@@ -7,17 +7,16 @@ before_install:
 - export PATH=~/.local/bin:$PATH
 - if [ ! -e ~/.local/bin/stack ]; then mkdir -p ~/.local/bin; travis_retry curl -L
   https://github.com/commercialhaskell/stack/releases/download/v0.1.3.1/stack-0.1.3.1-x86_64-linux.gz
-  | gunzip > ~/.local/bin/stack; chmod a+x ~/.local/bin/stack; stack --install-ghc
-  upgrade --git; fi
+  | gunzip > ~/.local/bin/stack; chmod a+x ~/.local/bin/stack; stack --no-terminal
+  --install-ghc upgrade --git; fi
 - echo "$(ghc --version) [$(ghc --print-project-git-commit-id 2> /dev/null || echo
   '?')]"
 - stack +RTS -N2 -RTS --version
 install:
 - if [ "$STACK_SOLVER" = "YES" ]; then rm -f stack.yaml; stack update; stack init
-  --solver; else cp $STACK_YAML stack.yaml; fi; stack --no-terminal --skip-ghc-check
-  list-dependencies|sort > installplan.txt; cat installplan.txt; stack --no-terminal
-  --skip-ghc-check setup; if diff -u installplan.txt $HOME/.stack-work-cache/installplan.txt;
-  then echo "cabal build-cache HIT"; rm -rf .stack-work; cp -a $HOME/.stack-work-cache
+  --solver; fi; stack --no-terminal --skip-ghc-check list-dependencies|sort > installplan.txt;
+  cat installplan.txt; stack --no-terminal --skip-ghc-check setup; if diff -u $HOME/.stack-work-cache/installplan.txt
+  installplan.txt; then echo "cabal build-cache HIT"; rm -rf .stack-work; cp -a $HOME/.stack-work-cache
   .stack-work; rm -f .stack-work/installplan.txt; else echo "cabal build-cache MISS";
   rm -rf $HOME/.stack-work-cache; stack --no-terminal --skip-ghc-check build --test
   --only-dependencies; fi; if [ ! -d $HOME/.stack-work-cache ]; then echo "snapshotting

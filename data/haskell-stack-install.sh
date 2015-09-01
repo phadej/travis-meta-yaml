@@ -11,8 +11,6 @@ if [ "$STACK_SOLVER" = "YES" ]; then
   rm -f stack.yaml
   stack update
   stack init --solver
-else
-  cp $STACK_YAML stack.yaml
 fi
 
 # Generate install-plan
@@ -23,7 +21,7 @@ cat installplan.txt
 stack --no-terminal --skip-ghc-check setup
 
 # check whether current requested install-plan stack-work cache
-if diff -u installplan.txt $HOME/.stack-work-cache/installplan.txt; then
+if diff -u $HOME/.stack-work-cache/installplan.txt installplan.txt; then
   echo "cabal build-cache HIT"
   rm -rf .stack-work
   cp -a $HOME/.stack-work-cache .stack-work
