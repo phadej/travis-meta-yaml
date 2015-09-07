@@ -10,8 +10,9 @@ before_install:
 install:
 - if [ -f $HOME/.cabal/packages/hackage.haskell.org/00-index.tar.gz ]; then zcat $HOME/.cabal/packages/hackage.haskell.org/00-index.tar.gz
   > $HOME/.cabal/packages/hackage.haskell.org/00-index.tar; ls -l $HOME/.cabal/packages/hackage.haskell.org/;
-  fi; cabal update; sed -i 's/^jobs:/-- jobs:/' ${HOME}/.cabal/config; cabal install
-  --only-dependencies --enable-tests --enable-benchmarks --dry -v > installplan.txt;
+  fi; cabal update; sed -i 's/^jobs:/-- jobs:/' ${HOME}/.cabal/config; if [ -n "$STACKAGESNAPSHOT"
+  ]; then curl -O https://www.stackage.org/$STACKAGESNAPSHOT/cabal.config; fi; cabal
+  install --only-dependencies --enable-tests --enable-benchmarks --dry -v > installplan.txt;
   sed -i -e '1,/^Resolving /d' installplan.txt; cat installplan.txt; if diff -u $HOME/.cabsnap/installplan.txt
   installplan.txt; then echo "cabal build-cache HIT"; rm -rfv .ghc; cp -av $HOME/.cabsnap/ghc
   $HOME/.ghc; cp -av $HOME/.cabsnap/lib $HOME/.cabsnap/share $HOME/.cabsnap/bin $HOME/.cabal/;

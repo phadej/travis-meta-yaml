@@ -12,6 +12,11 @@ cabal update
 # we want one job
 sed -i 's/^jobs:/-- jobs:/' ${HOME}/.cabal/config
 
+# Stackage snapshot
+if [ -n "$STACKAGESNAPSHOT" ]; then
+  curl -O https://www.stackage.org/$STACKAGESNAPSHOT/cabal.config
+fi
+
 # Generate install-plan
 cabal install --only-dependencies --enable-tests --enable-benchmarks --dry -v > installplan.txt
 sed -i -e '1,/^Resolving /d' installplan.txt; cat installplan.txt

@@ -6,7 +6,7 @@ cache:
     - $HOME/.cabsnap
     - $HOME/.cabal/packages
 
-compiler: ": # ghc-$GHCVER cabal-$CABALVER"
+compiler: ": # ghc-$GHCVER cabal-$CABALVER $STACKAGESNAPSHOT"
 
 addons:
   apt:
