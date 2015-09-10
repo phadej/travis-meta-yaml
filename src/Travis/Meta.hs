@@ -27,6 +27,7 @@ import Data.Aeson.Types
 import Data.ByteString as BS
 import Data.Char
 import Data.FileEmbed
+import Data.Foldable
 import Data.Function (on)
 import Data.List as L (map, elemIndex, filter)
 import Data.Maybe
@@ -110,7 +111,7 @@ preprocessYaml' :: Value -> Either String Value
 preprocessYaml' v = do
   assertNoMatrixInclude v
   matrixInclude <- buildMatrixInclude v
-  let v' = v & deep _String %~ (embedTravisInstallSh . embedStackInstall)
+  let v' = v & deep _String %~ embedShellScripts
              & _Object . at "env" .~ Nothing
              & _Object . at "addons" .~ Nothing
              & _Object . at "compiler" .~ Nothing
@@ -121,10 +122,9 @@ preprocessYaml' v = do
 
 processLanguage :: Value -> Value
 processLanguage v =
-  case v ^? key "language" . _String of
-    Just t | t == "haskell-stack"      -> merge (v & _Object . at "language" .~ Nothing) stackTemplate
-           | t == "haskell-multi-ghc"  -> merge (v & _Object . at "language" .~ Nothing) multiGhcTemplate
-    _                                  -> v
+  case (v ^? key "language" . _String) >>= flip lookup languageTemplates of
+    Just template -> merge (v & _Object . at "language" .~ Nothing) template
+    Nothing       -> v
 
 buildMatrixInclude :: Value -> Either String Value
 buildMatrixInclude v = toJSON <$> mk `traverse` envs
@@ -167,31 +167,23 @@ shellScripts =
   , ("haskell-stack-install.sh", unlinesShell $(embedStringFile "data/haskell-stack-install.sh"))
   ]
 
+languageTemplates :: [(Text, Value)]
+languageTemplates =
+  [ t "haskell-stack" $(embedFile "data/language-haskell-stack.yml")
+  , t "haskell-multi-ghc" $(embedFile "data/language-haskell-multi-ghc.yml")
+  ]
+  where t name bs = (name, fromJust' (T.unpack name) $ decode bs)
+
+embedShellScripts :: Text -> Text
+embedShellScripts = appEndo $ foldMap (Endo . uncurry embedShellFile) shellScripts
+
 fromJust' :: String -> Maybe a -> a
 fromJust' _ (Just x) = x
 fromJust' e Nothing  = error $ "fromJust: Nothing -- " <> e
 
-stackTemplate :: Value
-stackTemplate = fromJust' "stack-template" $ decode $(embedFile "data/language-haskell-stack.yml")
-
-multiGhcTemplate :: Value
-multiGhcTemplate = fromJust $ decode $(embedFile "data/language-haskell-multi-ghc.yml")
-
-travisInstallSh :: Text
-travisInstallSh = unlinesShell $(embedStringFile "data/travis-install.sh")
-
 embedShellFile :: Text -> Text -> Text -> Text
 embedShellFile filename contents =
     RE.replace (contents <$ string "sh" <* some (sym ' ') <* string filename)
-
-embedTravisInstallSh :: Text -> Text
-embedTravisInstallSh = embedShellFile "travis-install.sh" travisInstallSh
-
-stackInstallSh :: Text
-stackInstallSh = unlinesShell $(embedStringFile "data/haskell-stack-install.sh")
-
-embedStackInstall :: Text -> Text
-embedStackInstall = embedShellFile "haskell-stack-install.sh" stackInstallSh
 
 unlinesShell :: Text -> Text
 unlinesShell = T.lines >>>
