@@ -87,7 +87,24 @@ interpolateEnv' env = RE.replace (f <$ sym '$' <*> many (psym isVarChar))
         f = fromMaybe "" . flip lookup env . T.pack
 
 preprocessYaml :: Value -> Either String Value
-preprocessYaml = preprocessYaml' . processLanguage
+preprocessYaml = preprocessYaml' . processMeta . processLanguage
+
+processMeta :: Value -> Value
+processMeta v =
+  case (v ^? key "meta" . _Object) of
+    Just meta -> processMeta' meta v
+    Nothing   -> v
+
+processMeta' :: Object -> Value -> Value
+processMeta' meta v =
+  v & key "before_install" . _Array %~ prefix "before_install_prefix"
+    & key "before_install" . _Array %~ suffix "before_install_suffix"
+    & key "install" . _Array %~ prefix "install_prefix"
+    & key "install" . _Array %~ suffix "install_suffix"
+    & key "script" . _Array %~ prefix "script_prefix"
+    & key "script" . _Array %~ suffix "script_suffix"
+  where prefix k = maybe Prelude.id mappend (meta ^? ix k . _Array)
+        suffix k = maybe Prelude.id (flip mappend) (meta ^? ix k . _Array)
 
 preprocessYaml' :: Value -> Either String Value
 preprocessYaml' v = do
@@ -97,6 +114,7 @@ preprocessYaml' v = do
              & _Object . at "env" .~ Nothing
              & _Object . at "addons" .~ Nothing
              & _Object . at "compiler" .~ Nothing
+             & _Object . at "meta" .~ Nothing
              & _Object . at "matrix" ?~ (fromMaybe (Object mempty) (v ^? key "matrix"))
              & key "matrix" . _Object . at "include" ?~ matrixInclude
   return v'
