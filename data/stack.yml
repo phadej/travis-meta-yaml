@@ -1,3 +1,4 @@
+
 # NB: don't set `language: haskell` here
 language: c
 sudo: false
@@ -37,7 +38,7 @@ before_install:
   - stack +RTS -N2 -RTS --version
 
 install:
-  - sh haskell-stack-install.sh
+  - sh stack-install.sh
 
 script:
   - stack --no-terminal --skip-ghc-check build --test

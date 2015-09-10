@@ -27,7 +27,7 @@ before_install:
   - cabal --version
 
 install:
-  - sh travis-install.sh
+  - sh multi-ghc-install.sh
 
 script:
   - if [ -f configure.ac ]; then autoreconf -i; fi

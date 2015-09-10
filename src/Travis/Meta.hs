@@ -16,9 +16,13 @@ module Travis.Meta (
   , parseEnv
   , interpolateEnv
   , unlinesShell
+  , shellScripts
+  , languageTemplates
+  , encode'
   ) where
 
 import Control.Category hiding ((.))
+import Control.Arrow (second)
 import Control.Lens hiding ((.=))
 import Control.Monad hiding (sequence)
 import Data.Aeson.Lens
@@ -163,19 +167,19 @@ preprocessIO source target = do
 -- | name and contents pairs
 shellScripts :: [(Text, Text)]
 shellScripts =
-  [ ("travis-install.sh", unlinesShell $(embedStringFile "data/travis-install.sh"))
-  , ("haskell-stack-install.sh", unlinesShell $(embedStringFile "data/haskell-stack-install.sh"))
+  [ ("multi-ghc-install.sh", $(embedStringFile "data/multi-ghc-install.sh"))
+  , ("stack-install.sh", $(embedStringFile "data/stack-install.sh"))
   ]
 
 languageTemplates :: [(Text, Value)]
 languageTemplates =
-  [ t "haskell-stack" $(embedFile "data/language-haskell-stack.yml")
-  , t "haskell-multi-ghc" $(embedFile "data/language-haskell-multi-ghc.yml")
+  [ t "haskell-stack" $(embedFile "data/stack.yml")
+  , t "haskell-multi-ghc" $(embedFile "data/multi-ghc.yml")
   ]
   where t name bs = (name, fromJust' (T.unpack name) $ decode bs)
 
 embedShellScripts :: Text -> Text
-embedShellScripts = appEndo $ foldMap (Endo . uncurry embedShellFile) shellScripts
+embedShellScripts = appEndo $ foldMap (Endo . uncurry embedShellFile . second unlinesShell) shellScripts
 
 fromJust' :: String -> Maybe a -> a
 fromJust' _ (Just x) = x

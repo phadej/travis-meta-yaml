@@ -1,4 +1,4 @@
--- This file has been generated from package.yaml by hpack version 0.6.0.
+-- This file has been generated from package.yaml by hpack version 0.7.0.
 --
 -- see: https://github.com/sol/hpack
 
@@ -20,11 +20,11 @@ cabal-version:  >= 1.10
 extra-source-files:
     .travis.meta.yml
     .travis.yml
-    data/haskell-stack-install.sh
-    data/language-haskell-multi-ghc.yml
-    data/language-haskell-stack.yml
-    data/travis-install.sh
-    data/travis.meta.yml
+    data/multi-ghc-install.sh
+    data/multi-ghc.meta.yml
+    data/multi-ghc.yml
+    data/stack-install.sh
+    data/stack.yml
     fixtures/matrix-include.yml
     fixtures/multi-ghc-processed.yml
     fixtures/multi-ghc.yml
