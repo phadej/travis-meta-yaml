@@ -31,7 +31,7 @@ before_install:
   # We need to do stack upgrade, until https://github.com/commercialhaskell/stack/issues/862 is released
   - if [ ! -e ~/.local/bin/stack ]; then
       mkdir -p ~/.local/bin;
-      travis_retry curl -L https://github.com/commercialhaskell/stack/releases/download/v0.1.4.0/stack-0.1.4.0-x86_64-linux.gz | tar xz -C ~/.local/bin;
+      travis_retry curl -L https://github.com/commercialhaskell/stack/releases/download/v0.1.4.0/stack-0.1.4.0-x86_64-linux.tar.gz | tar xz -C ~/.local/bin;
     fi
   # version
   - echo "$(ghc --version) [$(ghc --print-project-git-commit-id 2> /dev/null || echo '?')]"

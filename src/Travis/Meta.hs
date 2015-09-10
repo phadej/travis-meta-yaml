@@ -102,14 +102,10 @@ processMeta v =
 
 processMeta' :: Value -> Value -> Value
 processMeta' meta v =
-  v & key "before_install" . _Array %~ prefix "before_install" "prefix"
-    & key "before_install" . _Array %~ suffix "before_install" "suffix"
-    & key "install" . _Array %~ prefix "install" "prefix"
-    & key "install" . _Array %~ suffix "install" "suffix"
-    & key "script" . _Array %~ prefix "script" "prefix"
-    & key "script" . _Array %~ suffix "script" "suffix"
-  where prefix k l = maybe Prelude.id mappend (meta ^? key k . key l . _Array)
-        suffix k l = maybe Prelude.id (flip mappend) (meta ^? key k . key l . _Array)
+  appEndo (mconcat [ Endo (key s . _Array %~ b s) | s <- sections, b <- [prefix, suffix] ]) v
+  where prefix k = maybe Prelude.id mappend (meta ^? key k . key "prefix" . _Array)
+        suffix k = maybe Prelude.id (flip mappend) (meta ^? key k . key "suffix" . _Array)
+        sections = ["before_install", "install", "script"]
 
 preprocessYaml' :: Value -> Either String Value
 preprocessYaml' v = do
