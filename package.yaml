@@ -1,5 +1,5 @@
 name: travis-meta-yaml
-version: 0.1.0.0
+version: 0.2.0.0
 synopsis: .travis.yml preprocessor
 description: .travis.yml preprocessor
 author: Oleg Grenrus <oleg.grenrus@iki.fi>
@@ -31,6 +31,8 @@ dependencies:
   - yaml >= 0.8.13
 
 library:
+  other-modules:
+    - Paths_travis_meta_yaml
   source-dirs:
     - src
 
