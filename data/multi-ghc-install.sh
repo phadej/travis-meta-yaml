@@ -14,7 +14,7 @@ sed -i 's/^jobs:/-- jobs:/' ${HOME}/.cabal/config
 
 # Stackage snapshot
 if [ -n "$STACKAGESNAPSHOT" ]; then
-  curl -O https://www.stackage.org/$STACKAGESNAPSHOT/cabal.config
+  curl --silent https://www.stackage.org/$STACKAGESNAPSHOT/cabal.config | grep -v "$(cabal info . -v0 | head -n 1 | awk '{ print $2 }' | sed -E 's/-[0-9]+(\.[0-9]+)+//') ==" > cabal.config
 fi
 
 # Generate install-plan
