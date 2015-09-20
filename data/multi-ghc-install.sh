@@ -18,7 +18,11 @@ if [ -n "$STACKAGESNAPSHOT" ]; then
 fi
 
 # Generate install-plan
-cabal install --only-dependencies --enable-tests --enable-benchmarks --dry -v > installplan.txt
+if [ "$NOTESTS" = "YES" ]; then
+  cabal install --only-dependencies --dry -v > installplan.txt
+else
+  cabal install --only-dependencies --enable-tests --enable-benchmarks --dry -v > installplan.txt
+fi
 sed -i -e '1,/^Resolving /d' installplan.txt; cat installplan.txt
 
 # check whether current requested install-plan matches cached package-db snapshot
@@ -31,7 +35,12 @@ else
   echo "cabal build-cache MISS"
   rm -rf $HOME/.cabsnap
   mkdir -p $HOME/.ghc $HOME/.cabal/lib $HOME/.cabal/share $HOME/.cabal/bin
-  cabal install --only-dependencies --enable-tests --enable-benchmarks
+
+  if [ "$NOTESTS" = "YES" ]; then
+    cabal install --only-dependencies
+  else
+    cabal install --only-dependencies --enable-tests --enable-benchmarks
+  fi
 fi
 
 # snapshot package-db on cache miss
