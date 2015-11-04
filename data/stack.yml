@@ -36,6 +36,7 @@ before_install:
   # version
   - echo "$(ghc --version) [$(ghc --print-project-git-commit-id 2> /dev/null || echo '?')]"
   - stack +RTS -N2 -RTS --version
+  - ghc --version
 
 install:
   - sh stack-install.sh

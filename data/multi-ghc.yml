@@ -25,6 +25,7 @@ before_install:
   # versions
   - echo "$(ghc --version) [$(ghc --print-project-git-commit-id 2> /dev/null || echo '?')]"
   - cabal --version
+  - ghc --version
 
 install:
   - sh multi-ghc-install.sh
