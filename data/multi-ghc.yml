@@ -6,7 +6,7 @@ cache:
     - $HOME/.cabsnap
     - $HOME/.cabal/packages
 
-compiler: ": # ghc-$GHCVER cabal-$CABALVER $STACKAGESNAPSHOT"
+compiler: ": # ghc-$GHCVER cabal-$CABALVER $STACKAGESNAPSHOT $CABALCONFIG"
 
 addons:
   apt:
@@ -26,6 +26,16 @@ before_install:
   - echo "$(ghc --version) [$(ghc --print-project-git-commit-id 2> /dev/null || echo '?')]"
   - cabal --version
   - ghc --version
+  - if [ "$NOTESTS" = "YES" ]; then 
+      export CABALCONFOPTS="";
+      export CABALTEST="true";
+    else
+      export CABALCONFOPTS="--enable-tests --enable-benchmarks";
+      export CABALTEST="cabal test";
+    fi
+  - if [ "$PEDANTIC" = "YES" ]; then
+      export CABALBUILDOPTS="--ghc-options=-Werror --ghc-options=-Wall";
+    fi
 
 install:
   - sh multi-ghc-install.sh
@@ -33,9 +43,9 @@ install:
 script:
   - if [ -f configure.ac ]; then autoreconf -i; fi
   # -v2 provides useful information for debugging
-  - if [ ! "$NOTESTS" = "YES" ]; then cabal configure --enable-tests --enable-benchmarks -v2; else cabal configure -v2; fi
-  - cabal build
-  - if [ ! "$NOTESTS" = "YES" ]; then cabal test; fi
+  - cabal configure $CABALCONFOPTS -v2
+  - cabal build $CABALBUILDOPTS
+  - $CABALTEST
   - if [ "$CABALVER" = "1.22" ]; then cabal check; fi
   # tests that a source-distribution can be generated
   - cabal sdist

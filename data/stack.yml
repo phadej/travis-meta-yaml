@@ -42,5 +42,8 @@ install:
   - sh stack-install.sh
 
 script:
-  - stack --no-terminal --skip-ghc-check build --test
+  - if [ "$PEDANTIC" = "YES" ]; then
+       export STACKOPTS=--pedantic;
+    fi
+  - stack --no-terminal --skip-ghc-check build --test $STACKOPTS
   - stack --no-terminal --skip-ghc-check sdist

@@ -12,17 +12,18 @@ cabal update
 # we want one job
 sed -i 's/^jobs:/-- jobs:/' ${HOME}/.cabal/config
 
+# Cabal config
+if [ -n "$CABALCONFIG" ]; then
+  cp $CABALCONFIG cabal.config
+fi
+
 # Stackage snapshot
 if [ -n "$STACKAGESNAPSHOT" ]; then
   curl --silent https://www.stackage.org/$STACKAGESNAPSHOT/cabal.config | grep -v "$(cabal info . -v0 | head -n 1 | awk '{ print $2 }' | sed -E 's/-[0-9]+(\.[0-9]+)+//') ==" > cabal.config
 fi
 
 # Generate install-plan
-if [ "$NOTESTS" = "YES" ]; then
-  cabal install --only-dependencies --dry -v > installplan.txt
-else
-  cabal install --only-dependencies --enable-tests --enable-benchmarks --dry -v > installplan.txt
-fi
+cabal install --only-dependencies $CABALCONFOPTS --dry -v > installplan.txt
 sed -i -e '1,/^Resolving /d' installplan.txt; cat installplan.txt
 
 # check whether current requested install-plan matches cached package-db snapshot
@@ -36,11 +37,7 @@ else
   rm -rf $HOME/.cabsnap
   mkdir -p $HOME/.ghc $HOME/.cabal/lib $HOME/.cabal/share $HOME/.cabal/bin
 
-  if [ "$NOTESTS" = "YES" ]; then
-    cabal install --only-dependencies
-  else
-    cabal install --only-dependencies --enable-tests --enable-benchmarks
-  fi
+  cabal install --only-dependencies $CABALCONFOPTS
 fi
 
 # snapshot package-db on cache miss
