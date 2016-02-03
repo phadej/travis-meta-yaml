@@ -1,4 +1,4 @@
--- This file has been generated from package.yaml by hpack version 0.7.1.
+-- This file has been generated from package.yaml by hpack version 0.8.0.
 --
 -- see: https://github.com/sol/hpack
 
@@ -47,6 +47,7 @@ library
   build-depends:
       base >=4.7 && <4.9
     , aeson
+    , aeson-extra >=0.3.1.0
     , bytestring
     , file-embed >= 0.0.9
     , lens
@@ -71,6 +72,7 @@ executable travis-meta-yaml
   build-depends:
       base >=4.7 && <4.9
     , aeson
+    , aeson-extra >=0.3.1.0
     , bytestring
     , file-embed >= 0.0.9
     , lens
@@ -93,6 +95,7 @@ test-suite tests
   build-depends:
       base >=4.7 && <4.9
     , aeson
+    , aeson-extra >=0.3.1.0
     , bytestring
     , file-embed >= 0.0.9
     , lens
