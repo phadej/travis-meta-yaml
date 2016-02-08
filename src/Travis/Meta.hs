@@ -99,17 +99,15 @@ preprocessYaml :: Value -> Either String Value
 preprocessYaml = preprocessYaml' . processMeta . processLanguage
 
 processMeta :: Value -> Value
-processMeta v =
-  case (v ^? key "meta") of
-    Just meta -> processMeta' meta v
-    Nothing   -> v
-
-processMeta' :: Value -> Value -> Value
-processMeta' meta v =
-  appEndo (mconcat [ Endo (key s . _Array %~ b s) | s <- sections, b <- [prefix, suffix] ]) v
-  where prefix k = maybe Prelude.id mappend (meta ^? key k . key "prefix" . _Array)
-        suffix k = maybe Prelude.id (flip mappend) (meta ^? key k . key "suffix" . _Array)
-        sections = ["before_install", "install", "script"]
+processMeta v = v'''
+  where
+    v' = v & _Object . at "meta" .~ Nothing
+    v'' = case (v ^? key "meta" . key "pre") of
+      Just meta -> merge meta v'
+      Nothing   -> v'
+    v''' = case (v ^? key "meta" . key "post") of
+      Just meta -> merge v'' meta
+      Nothing   -> v''
 
 preprocessYaml' :: Value -> Either String Value
 preprocessYaml' v = do

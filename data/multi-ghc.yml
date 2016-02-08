@@ -6,7 +6,7 @@ cache:
     - $HOME/.cabsnap
     - $HOME/.cabal/packages
 
-compiler: ": # ghc-$GHCVER cabal-$CABALVER $STACKAGESNAPSHOT $CABALCONFIG"
+compiler: ": # ghc-$GHCVER cabal-$CABALVER $STACKAGESNAPSHOT $CABALCONFIG $CABALFLAGS"
 
 addons:
   apt:
@@ -26,11 +26,11 @@ before_install:
   - echo "$(ghc --version) [$(ghc --print-project-git-commit-id 2> /dev/null || echo '?')]"
   - cabal --version
   - ghc --version
-  - if [ "$NOTESTS" = "YES" ]; then 
-      export CABALCONFOPTS="";
+  - if [ "$NOTESTS" = "YES" ]; then
+      export CABALCONFOPTS="$CABALFLAGS";
       export CABALTEST="true";
     else
-      export CABALCONFOPTS="--enable-tests --enable-benchmarks";
+      export CABALCONFOPTS="$CABALFLAGS --enable-tests --enable-benchmarks";
       export CABALTEST="cabal test";
     fi
   - if [ "$PEDANTIC" = "YES" ]; then
@@ -52,7 +52,7 @@ script:
 
   # check that the generated source-distribution can be built & installed
   - SRC_TGZ=$(cabal info . | awk '{print $2;exit}').tar.gz &&
-    (cd dist && cabal install --force-reinstalls "$SRC_TGZ")
+    (cd dist && cabal install --force-reinstalls $CABALFLAGS "$SRC_TGZ")
 
 before_cache:
   - rm -fv $HOME/.cabal/packages/hackage.haskell.org/build-reports.log

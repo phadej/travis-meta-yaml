@@ -9,9 +9,9 @@ before_install:
   '?')]"
 - cabal --version
 - ghc --version
-- if [ "$NOTESTS" = "YES" ]; then export CABALCONFOPTS=""; export CABALTEST="true";
-  else export CABALCONFOPTS="--enable-tests --enable-benchmarks"; export CABALTEST="cabal
-  test"; fi
+- if [ "$NOTESTS" = "YES" ]; then export CABALCONFOPTS="$CABALFLAGS"; export CABALTEST="true";
+  else export CABALCONFOPTS="$CABALFLAGS --enable-tests --enable-benchmarks"; export
+  CABALTEST="cabal test"; fi
 - if [ "$PEDANTIC" = "YES" ]; then export CABALBUILDOPTS="--ghc-options=-Werror --ghc-options=-Wall";
   fi
 install:
@@ -39,7 +39,7 @@ script:
 - if [ "$CABALVER" = "1.22" ]; then cabal check; fi
 - cabal sdist
 - SRC_TGZ=$(cabal info . | awk '{print $2;exit}').tar.gz && (cd dist && cabal install
-  --force-reinstalls "$SRC_TGZ")
+  --force-reinstalls $CABALFLAGS "$SRC_TGZ")
 matrix:
   fast_finish: true
   include:
