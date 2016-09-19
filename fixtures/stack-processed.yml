@@ -20,12 +20,14 @@ install:
   installplan.txt; then echo "cabal build-cache HIT"; rm -rf .stack-work; cp -a $HOME/.stack-work-cache
   .stack-work; rm -f .stack-work/installplan.txt; else echo "cabal build-cache MISS";
   rm -rf $HOME/.stack-work-cache; stack --no-terminal --skip-ghc-check build --test
-  --only-dependencies; fi; if [ ! -d $HOME/.stack-work-cache ]; then echo "snapshotting
-  package-db to build-cache"; cp -a .stack-work $HOME/.stack-work-cache; cp -a installplan.txt
-  $HOME/.stack-work-cache/installplan.txt; fi;
+  --only-dependencies -j1 --ghc-options="-j2 +RTS -M2G -A128M -n2m -RTS"; fi; if [
+  ! -d $HOME/.stack-work-cache ]; then echo "snapshotting package-db to build-cache";
+  cp -a .stack-work $HOME/.stack-work-cache; cp -a installplan.txt $HOME/.stack-work-cache/installplan.txt;
+  fi;
 script:
 - if [ "$PEDANTIC" = "YES" ]; then export STACKOPTS=--pedantic; fi
-- stack --no-terminal --skip-ghc-check build --test $STACKOPTS
+- stack --no-terminal --skip-ghc-check build --test $STACKOPTS -j1 --ghc-options="-j2
+  +RTS -M2G -A128M -n2m -RTS"
 - stack --no-terminal --skip-ghc-check sdist
 matrix:
   include:

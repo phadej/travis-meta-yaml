@@ -29,7 +29,7 @@ if diff -u $HOME/.stack-work-cache/installplan.txt installplan.txt; then
 else
   echo "cabal build-cache MISS"
   rm -rf $HOME/.stack-work-cache
-  stack --no-terminal --skip-ghc-check build --test --only-dependencies
+  stack --no-terminal --skip-ghc-check build --test --only-dependencies -j1 --ghc-options="-j2 +RTS -M2G -A128M -n2m -RTS"
 fi
 
 # snapshot .stack-work on cache miss

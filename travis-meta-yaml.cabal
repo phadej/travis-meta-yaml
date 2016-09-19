@@ -1,4 +1,4 @@
--- This file has been generated from package.yaml by hpack version 0.8.0.
+-- This file has been generated from package.yaml by hpack version 0.15.0.
 --
 -- see: https://github.com/sol/hpack
 
@@ -45,7 +45,7 @@ library
       src
   ghc-options: -Wall
   build-depends:
-      base >=4.7 && <4.9
+      base >=4.7 && <4.10
     , aeson
     , aeson-extra >=0.3.1.0
     , bytestring
@@ -70,7 +70,7 @@ executable travis-meta-yaml
       cli
   ghc-options: -Wall
   build-depends:
-      base >=4.7 && <4.9
+      base >=4.7 && <4.10
     , aeson
     , aeson-extra >=0.3.1.0
     , bytestring
@@ -93,7 +93,7 @@ test-suite tests
       tests
   ghc-options: -Wall
   build-depends:
-      base >=4.7 && <4.9
+      base >=4.7 && <4.10
     , aeson
     , aeson-extra >=0.3.1.0
     , bytestring

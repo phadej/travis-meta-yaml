@@ -23,7 +23,7 @@ if [ -n "$STACKAGESNAPSHOT" ]; then
 fi
 
 # Generate install-plan
-cabal install --only-dependencies $CABALCONFOPTS --dry -v > installplan.txt
+cabal install --constraint='integer-simple installed' --only-dependencies $CABALCONFOPTS --dry -v > installplan.txt
 sed -i -e '1,/^Resolving /d' installplan.txt; cat installplan.txt
 
 # check whether current requested install-plan matches cached package-db snapshot
@@ -37,7 +37,7 @@ else
   rm -rf $HOME/.cabsnap
   mkdir -p $HOME/.ghc $HOME/.cabal/lib $HOME/.cabal/share $HOME/.cabal/bin
 
-  cabal install --only-dependencies $CABALCONFOPTS
+  cabal install --constraint='integer-simple installed' --only-dependencies $CABALCONFOPTS
 fi
 
 # snapshot package-db on cache miss

@@ -52,7 +52,7 @@ script:
 
   # check that the generated source-distribution can be built & installed
   - SRC_TGZ=$(cabal info . | awk '{print $2;exit}').tar.gz &&
-    (cd dist && cabal install --force-reinstalls $CABALFLAGS "$SRC_TGZ")
+    (cd dist && cabal install --constraint='integer-simple installed' --force-reinstalls $CABALFLAGS "$SRC_TGZ")
 
 before_cache:
   - rm -fv $HOME/.cabal/packages/hackage.haskell.org/build-reports.log
