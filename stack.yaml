@@ -1,1 +1,6 @@
-stack-lts-6.yaml
+resolver: nightly-2016-12-07
+packages:
+- '.'
+extra-deps: []
+flags: {}
+extra-package-dbs: []
