@@ -166,7 +166,6 @@ preprocessIO source target = do
 shellScripts :: [(Text, Text)]
 shellScripts =
   [ ("multi-ghc-install.sh", $(embedStringFile "data/multi-ghc-install.sh"))
-  , ("stack-install.sh", $(embedStringFile "data/stack-install.sh"))
   ]
 
 languageTemplates :: [(Text, Value)]

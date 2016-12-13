@@ -1,4 +1,4 @@
--- This file has been generated from package.yaml by hpack version 0.14.0.
+-- This file has been generated from package.yaml by hpack version 0.15.0.
 --
 -- see: https://github.com/sol/hpack
 
@@ -23,7 +23,6 @@ extra-source-files:
     data/multi-ghc-install.sh
     data/multi-ghc.meta.yml
     data/multi-ghc.yml
-    data/stack-install.sh
     data/stack.yml
     fixtures/matrix-include.yml
     fixtures/multi-ghc-processed.yml
